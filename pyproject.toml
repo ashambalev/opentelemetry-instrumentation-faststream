@@ -1,0 +1,106 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "faststream-instrumentation"
+dynamic = ["version"]
+description = "FastStream instrumentation for OpenTelemetry"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+keywords = []
+authors = [{ name = "Artem Shambalev", email = "a.shambalev@gmail.com" }]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = [
+  "opentelemetry-api ~= 1.5",
+  "opentelemetry-instrumentation ~= 0.44b0",
+  "wrapt >= 1.0.0, < 2.0.0",
+]
+
+
+[project.optional-dependencies]
+instruments = ["faststream[redis] >= 0.4.4, < 0.5.0"]
+quality = ["mypy~=1.8.0", "pre-commit~=3.6.0", "ruff~=0.3.0"]
+tests = [
+  "faststream-instrumentation[instruments]",
+  "opentelemetry-test-utils ~= 0.44b0",
+  "wrapt >= 1.0.0, < 2.0.0",
+  "pytest~=8.0.0",
+  "pytest-cov~=4.1",
+]
+
+
+[project.urls]
+Documentation = "https://github.com/ashambalev/faststream-instrumentation#readme"
+Issues = "https://github.com/ashambalev/faststream-instrumentation/issues"
+Source = "https://github.com/ashambalev/faststream-instrumentation"
+
+
+[tool.hatch.version]
+path = "src/faststream_instrumentation/__about__.py"
+
+
+[tool.hatch.envs.quality]
+features = ["quality"]
+
+[tool.hatch.envs.quality.scripts]
+check = ["ruff src tests"]
+format = ["ruff --fix src tests", "check"]
+typecheck = ["mypy src --install-types --non-interactive"]
+
+[tool.mypy]
+python_version = "3.12"
+check_untyped_defs = true
+ignore_missing_imports = true
+warn_return_any = true
+
+[tool.ruff]
+ignore = [
+  "E501", # line too long, handled by black
+  "B008", # do not perform function calls in argument defaults
+  "C901", # too complex
+]
+select = [
+  "E", # pycodestyle errors
+  "W", # pycodestyle warnings
+  "F", # pyflakes
+  "I", # isort
+  "C", # flake8-comprehensions
+  "B", # flake8-bugbear
+]
+
+[tool.ruff.isort]
+known-first-party = ["faststream_instrumentation"]
+
+[tool.hatch.envs.tests]
+features = ["tests"]
+
+[tool.hatch.envs.tests.scripts]
+run = "pytest --cov=REPLACE_PACKAGE_NAME --cov-report=term-missing tests/ --durations 0 -s {args:tests}"
+
+[[tool.hatch.envs.tests.matrix]]
+python = ["311", "312"]
+
+[tool.hatch.envs.docs]
+features = ["docs"]
+
+[tool.hatch.envs.docs.scripts]
+build = ["mkdocs build"]
+serve = ["mkdocs serve"]
+
+[tool.hatch.build.targets.sdist]
+exclude = [
+  "/.github",
+  "/.vscode",
+  "/.pre-commit-config.yaml",
+  "/.gitignore",
+  "/tests",
+]
