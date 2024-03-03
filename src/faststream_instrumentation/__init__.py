@@ -3,18 +3,18 @@ from timeit import default_timer
 from typing import Any, Collection
 
 import wrapt
+from faststream import FastStream
+from faststream.broker.message import StreamMessage
+from faststream.utils import context as faststream_context
 from opentelemetry import metrics, propagate, trace
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 from opentelemetry.instrumentation.utils import unwrap
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import MetricReader
 from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
-from opentelemetry.sdk.trace import TracerProvider, SpanProcessor
+from opentelemetry.sdk.trace import SpanProcessor, TracerProvider
 from opentelemetry.semconv.trace import SpanAttributes
 
-from faststream import FastStream
-from faststream.broker.message import StreamMessage
-from faststream.utils import context as faststream_context
 from faststream_instrumentation.package import _instruments
 from faststream_instrumentation.version import __version__
 
@@ -38,7 +38,7 @@ def _attributes_from_message(
     if attr_type is None:
         attr_type = list(_ATTRIBUTE_MESSAGE_MAPPING.keys())
     for attr in attr_type:
-        if attr not in  _ATTRIBUTE_MESSAGE_MAPPING.keys():
+        if attr not in _ATTRIBUTE_MESSAGE_MAPPING.keys():
             continue
         if isinstance(msg, dict):
             val = msg.get(_ATTRIBUTE_MESSAGE_MAPPING[attr], None)
@@ -51,7 +51,7 @@ def _attributes_from_message(
     return attributes
 
 
-_duration_attrs :list[str]= [
+_duration_attrs: list[str] = [
     SpanAttributes.MESSAGING_SYSTEM,
     SpanAttributes.MESSAGING_DESTINATION,
     SpanAttributes.MESSAGING_MESSAGE_ID,
@@ -151,13 +151,16 @@ class FastStreamInstrumentator(BaseInstrumentor):
         app: FastStream,
         resource: Resource | None = None,
         tracer_provider: TracerProvider | None = None,
-        meter_provider: MeterProvider | None= None,
-        span_processor: SpanProcessor | None= None,
-        metric_readers: list[MetricReader] | None= None,
+        meter_provider: MeterProvider | None = None,
+        span_processor: SpanProcessor | None = None,
+        metric_readers: list[MetricReader] | None = None,
     ):
         if resource is None:
             resource = Resource(
-                attributes={SERVICE_NAME: app.identifier or "faststream", SERVICE_VERSION: app.version}
+                attributes={
+                    SERVICE_NAME: app.identifier or "faststream",
+                    SERVICE_VERSION: app.version,
+                }
             )
         tracer_provider = tracer_provider or TracerProvider(resource=resource)
         if span_processor:
@@ -170,14 +173,14 @@ class FastStreamInstrumentator(BaseInstrumentor):
 
         metrics.set_meter_provider(meter_provider)
 
-        app.tracer = tracer_provider.get_tracer(__name__, __version__) # type: ignore
+        app.tracer = tracer_provider.get_tracer(__name__, __version__)  # type: ignore
         match app.broker.__class__.__name__:
             case "RedisBroker":
                 FastStreamInstrumentator.instrument_redis_broker()
 
     @staticmethod
     def uninstrument_app(app: FastStream):
-        app.tracer = None # type: ignore
+        app.tracer = None  # type: ignore
         match app.broker.__class__.__name__:
             case "RedisBroker":
                 FastStreamInstrumentator.uninstrument_redis_broker()

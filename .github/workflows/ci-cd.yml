@@ -21,56 +21,46 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check-quality:
-    runs-on: ubuntu-latest
+  run:
+    name: Python ${{ matrix.python-version }} on ${{ startsWith(matrix.os, 'macos-') && 'macOS' || startsWith(matrix.os, 'windows-') && 'Windows' || 'Linux' }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ['3.11', '3.12']
 
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: setup-python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
-      - name: install-dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ".[quality]"
+    - name: Install Hatch
+      run: pip install --upgrade hatch
 
-      - name: check-quality
-        run: |
-          ruff src tests
-          mypy src
+    - name: Run static analysis
+      run: hatch run quality:check
 
-  run-tests:
-    needs: check-quality
+    - name: Run formatter
+      run: hatch run quality:format
 
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: setup-python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
-      - name: install-dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install ".[tests]"
-
-      - name: run-tests
-        run: pytest --cov=faststream_instrumentation --cov-report=term-missing tests/ -s --durations 0
+    - name: Run tests
+      run: hatch run tests:pytest
 
   publish-package:
-    needs: run-tests
-    if: github.event_name == 'release'
-
+    needs: run
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.11', '3.12']
+    environment: release
+    permissions:
+      id-token: write
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -80,15 +70,13 @@ jobs:
         with:
           python-version: 3.12
 
-      - name: install-dependencies
+      - name: Install Hatch
         run: |
           python -m pip install --upgrade pip
           pip install hatch
 
-      - name: build-package
+      - name: Build Package
         run: hatch build
 
-      - name: publish-package
-        run: hatch publish --user __token__ --auth $PYPI_TOKEN
-        env:
-          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

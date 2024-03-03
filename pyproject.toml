@@ -52,8 +52,8 @@ path = "src/faststream_instrumentation/__about__.py"
 features = ["quality"]
 
 [tool.hatch.envs.quality.scripts]
-check = ["ruff src tests"]
-format = ["ruff --fix src tests", "check"]
+check = ["ruff check src tests --fix"]
+format = ["ruff format src tests", "check"]
 typecheck = ["mypy src --install-types --non-interactive"]
 
 [tool.mypy]
@@ -63,6 +63,13 @@ ignore_missing_imports = true
 warn_return_any = true
 
 [tool.ruff]
+line-length = 100
+
+[tool.ruff.format]
+quote-style = "double"
+docstring-code-format = true
+
+[tool.ruff.lint]
 ignore = [
   "E501", # line too long, handled by black
   "B008", # do not perform function calls in argument defaults
@@ -77,7 +84,7 @@ select = [
   "B", # flake8-bugbear
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["faststream_instrumentation"]
 
 [tool.hatch.envs.tests]
