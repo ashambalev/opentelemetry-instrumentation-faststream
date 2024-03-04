@@ -3,20 +3,20 @@ from timeit import default_timer
 from typing import Any, Collection
 
 import wrapt
-from faststream import FastStream
-from faststream.broker.message import StreamMessage
-from faststream.utils import context as faststream_context
 from opentelemetry import metrics, propagate, trace
+from opentelemetry.instrumentation.faststream.package import _instruments
 from opentelemetry.instrumentation.instrumentor import BaseInstrumentor
 from opentelemetry.instrumentation.utils import unwrap
+from opentelemetry.instrumentation.version import __version__
 from opentelemetry.sdk.metrics import MeterProvider
 from opentelemetry.sdk.metrics.export import MetricReader
 from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
 from opentelemetry.sdk.trace import SpanProcessor, TracerProvider
 from opentelemetry.semconv.trace import SpanAttributes
 
-from faststream_instrumentation.package import _instruments
-from faststream_instrumentation.version import __version__
+from faststream import FastStream
+from faststream.broker.message import StreamMessage
+from faststream.utils import context as faststream_context
 
 tracer = trace.get_tracer(__name__)
 meter = metrics.get_meter(__name__, __version__)

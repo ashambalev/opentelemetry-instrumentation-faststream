@@ -5,7 +5,7 @@ from faststream import FastStream
 from faststream.redis.broker import RedisBroker
 from faststream.redis.producer import RedisFastProducer
 
-from faststream_instrumentation import FastStreamInstrumentator
+from opentelemetry.instrumentation.faststream import FastStreamInstrumentator
 
 
 class TestFastStream(TestCase):

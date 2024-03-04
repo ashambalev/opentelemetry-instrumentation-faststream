@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "faststream-instrumentation"
+name = "opentelemetry-instrumentation-faststream"
 dynamic = ["version"]
 description = "FastStream instrumentation for OpenTelemetry"
 readme = "README.md"
@@ -30,7 +30,7 @@ dependencies = [
 instruments = ["faststream[redis] >= 0.4.4, < 0.5.0"]
 quality = ["mypy~=1.8.0", "pre-commit~=3.6.0", "ruff~=0.3.0"]
 tests = [
-  "faststream-instrumentation[instruments]",
+  "opentelemetry-instrumentation-faststream[instruments]",
   "opentelemetry-test-utils ~= 0.44b0",
   "wrapt >= 1.0.0, < 2.0.0",
   "pytest~=8.0.0",
@@ -39,13 +39,13 @@ tests = [
 
 
 [project.urls]
-Documentation = "https://github.com/ashambalev/faststream-instrumentation#readme"
-Issues = "https://github.com/ashambalev/faststream-instrumentation/issues"
-Source = "https://github.com/ashambalev/faststream-instrumentation"
+Documentation = "https://github.com/ashambalev/opentelemetry-instrumentation-faststream#readme"
+Issues = "https://github.com/ashambalev/opentelemetry-instrumentation-faststream/issues"
+Source = "https://github.com/ashambalev/opentelemetry-instrumentation-faststream"
 
 
 [tool.hatch.version]
-path = "src/faststream_instrumentation/__about__.py"
+path = "src/opentelemetry/instrumentation/faststream/__about__.py"
 
 
 [tool.hatch.envs.quality]
@@ -85,7 +85,7 @@ select = [
 ]
 
 [tool.ruff.lint.isort]
-known-first-party = ["faststream_instrumentation"]
+known-first-party = ["opentelemetry-instrumentation-faststream"]
 
 [tool.hatch.envs.tests]
 features = ["tests"]
@@ -111,3 +111,6 @@ exclude = [
   "/.gitignore",
   "/tests",
 ]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/opentelemetry"]
