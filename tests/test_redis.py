@@ -2,9 +2,8 @@ import pytest
 from faststream import Context
 from faststream.redis import RedisBroker, TestRedisBroker
 from opentelemetry import trace
+from opentelemetry.instrumentation.faststream.middlewares import RedisOtelMiddleware
 from opentelemetry.sdk.trace import TracerProvider
-
-from faststream_instrumentation.middlewares import RedisOtelMiddleware
 
 broker = RedisBroker("redis://localhost:6379", middlewares=[RedisOtelMiddleware])
 provider = TracerProvider()

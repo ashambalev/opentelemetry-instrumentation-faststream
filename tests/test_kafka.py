@@ -2,9 +2,8 @@ import pytest
 from faststream import Context
 from faststream.kafka import KafkaBroker, TestKafkaBroker
 from opentelemetry import trace
+from opentelemetry.instrumentation.faststream.middlewares import KafkaOtelMiddleware
 from opentelemetry.sdk.trace import TracerProvider
-
-from faststream_instrumentation.middlewares import KafkaOtelMiddleware
 
 broker = KafkaBroker("localhost:9092", middlewares=[KafkaOtelMiddleware])
 provider = TracerProvider()

@@ -2,9 +2,8 @@ import pytest
 from faststream import Context
 from faststream.nats import NatsBroker, TestNatsBroker
 from opentelemetry import trace
+from opentelemetry.instrumentation.faststream.middlewares import NatsOtelMiddleware
 from opentelemetry.sdk.trace import TracerProvider
-
-from faststream_instrumentation.middlewares import NatsOtelMiddleware
 
 broker = NatsBroker("nats://localhost:4222", middlewares=[NatsOtelMiddleware])
 provider = TracerProvider()

@@ -1,40 +1,17 @@
 from timeit import default_timer
 from typing import Any, Awaitable, Callable
 
+from opentelemetry import metrics, propagate, trace
+from opentelemetry.instrumentation.faststream.version import __version__
+from opentelemetry.semconv.trace import SpanAttributes
+
 from faststream import BaseMiddleware
 from faststream.broker.message import StreamMessage
 from faststream.utils import context as faststream_context
-from opentelemetry import metrics, propagate, trace
-from opentelemetry.semconv.trace import SpanAttributes
-
-from faststream_instrumentation.version import __version__
 
 tracer = trace.get_tracer(__name__)
 meter = metrics.get_meter(__name__, __version__)
 
-_DEFAULT_ATTRIBUTES = {
-    SpanAttributes.MESSAGING_SYSTEM: "redis",
-}
-
-_ATTRIBUTE_MESSAGE_MAPPING = {
-    SpanAttributes.MESSAGING_MESSAGE_ID: "message_id",
-    SpanAttributes.MESSAGING_CONVERSATION_ID: "correlation_id",
-    SpanAttributes.MESSAGING_DESTINATION_NAME: "channel",
-}
-
-_duration_attrs: list[str] = [
-    SpanAttributes.MESSAGING_SYSTEM,
-    SpanAttributes.MESSAGING_DESTINATION_NAME,
-    SpanAttributes.MESSAGING_MESSAGE_ID,
-    SpanAttributes.MESSAGING_CONVERSATION_ID,
-]
-
-_requests_attrs: list[str] = [
-    SpanAttributes.MESSAGING_SYSTEM,
-    SpanAttributes.MESSAGING_DESTINATION_NAME,
-    SpanAttributes.MESSAGING_MESSAGE_ID,
-    SpanAttributes.MESSAGING_CONVERSATION_ID,
-]
 duration_histogram = meter.create_histogram(
     name="faststream.consume.duration",
     unit="ms",

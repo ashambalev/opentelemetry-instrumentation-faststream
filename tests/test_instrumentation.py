@@ -1,7 +1,6 @@
 import pytest
 from faststream.redis import RedisBroker
-
-from faststream_instrumentation import FastStreamInstrumentator
+from opentelemetry.instrumentation.faststream import FastStreamInstrumentator
 
 
 @pytest.mark.asyncio

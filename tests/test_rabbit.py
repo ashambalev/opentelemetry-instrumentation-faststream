@@ -2,9 +2,8 @@ import pytest
 from faststream import Context
 from faststream.rabbit import RabbitBroker, TestRabbitBroker
 from opentelemetry import trace
+from opentelemetry.instrumentation.faststream.middlewares import RabbitOtelMiddleware
 from opentelemetry.sdk.trace import TracerProvider
-
-from faststream_instrumentation.middlewares import RabbitOtelMiddleware
 
 broker = RabbitBroker("localhost:9092", middlewares=[RabbitOtelMiddleware])
 provider = TracerProvider()
