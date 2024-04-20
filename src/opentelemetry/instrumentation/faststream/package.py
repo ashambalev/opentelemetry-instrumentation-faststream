@@ -1,2 +1,2 @@
-_instruments = ("faststream ~= 0.4",)
+_instruments = ("faststream ~= 0.5",)
 _supports_metrics = True
