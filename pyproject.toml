@@ -27,11 +27,15 @@ dependencies = [
 
 
 [project.optional-dependencies]
-instruments = ["faststream[redis] >= 0.4.4, < 0.5.0"]
+instruments = ["faststream[redis] >= 0.5.2, < 0.6.0"]
 quality = ["mypy~=1.8.0", "pre-commit~=3.6.0", "ruff~=0.3.0"]
 tests = [
-  "opentelemetry-instrumentation-faststream[instruments]",
-  "opentelemetry-test-utils ~= 0.44b0",
+  "opentelemetry-test-utils ~= 0.45b0",
+  "pytest-asyncio==0.23.6",
+  "aiokafka",
+  "nats-py",
+  "aio_pika",
+  "faststream[all] >= 0.5.2, < 0.6.0",
   "wrapt >= 1.0.0, < 2.0.0",
   "pytest~=8.0.0",
   "pytest-cov~=4.1",
@@ -49,7 +53,7 @@ path = "src/opentelemetry/instrumentation/faststream/__about__.py"
 
 
 [tool.hatch.envs.quality]
-features = ["quality"]
+features = ["quality", "tests"]
 
 [tool.hatch.envs.quality.scripts]
 check = ["ruff check src tests --fix"]
@@ -95,13 +99,6 @@ run = "pytest --cov=REPLACE_PACKAGE_NAME --cov-report=term-missing tests/ --dura
 
 [[tool.hatch.envs.tests.matrix]]
 python = ["311", "312"]
-
-[tool.hatch.envs.docs]
-features = ["docs"]
-
-[tool.hatch.envs.docs.scripts]
-build = ["mkdocs build"]
-serve = ["mkdocs serve"]
 
 [tool.hatch.build.targets.sdist]
 exclude = [
