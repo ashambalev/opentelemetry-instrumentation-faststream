@@ -61,7 +61,7 @@ class BaseOtelMiddleware(BaseMiddleware):
             # TODO: Name should be the name of the handler function
             # But it is not trivial as call_next is a wrapper/or partial function
             with tracer.start_as_current_span(
-                name=call_next.__name__, context=span_context
+                name="faststream_call", context=span_context
             ) as current_span:
                 current_span.set_attributes(attrs)
                 faststream_context.set_local("span", current_span)
