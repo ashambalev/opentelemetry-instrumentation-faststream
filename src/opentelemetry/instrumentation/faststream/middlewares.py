@@ -8,6 +8,7 @@ from opentelemetry.semconv.trace import SpanAttributes
 from faststream import BaseMiddleware
 from faststream.broker.message import StreamMessage
 from faststream.utils import context as faststream_context
+from faststream.broker.wrapper.call import HandlerCallWrapper
 
 tracer = trace.get_tracer(__name__)
 meter = metrics.get_meter(__name__, __version__)
@@ -48,6 +49,12 @@ class BaseOtelMiddleware(BaseMiddleware):
             SpanAttributes.MESSAGING_CONVERSATION_ID: options.get("correlation_id", ""),
         }
 
+    def _detect_wrapped_name(self, f: Callable[..., Awaitable[Any]]) -> str:
+        if hasattr(f, "__self__") and isinstance(f.__self__, HandlerCallWrapper):
+            if f.__self__._wrapped_call:
+                return f.__self__._wrapped_call.__name__
+        return "faststream.handler"
+
     async def consume_scope(
         self,
         call_next: Callable[[Any], Awaitable[Any]],
@@ -58,11 +65,8 @@ class BaseOtelMiddleware(BaseMiddleware):
         start = default_timer()
         active_requests_counter.add(1, attrs)
         try:
-            # TODO: Name should be the name of the handler function
-            # But it is not trivial as call_next is a wrapper/or partial function
-            with tracer.start_as_current_span(
-                name="faststream_call", context=span_context
-            ) as current_span:
+            name = self._detect_wrapped_name(call_next)
+            with tracer.start_as_current_span(name=name, context=span_context) as current_span:
                 current_span.set_attributes(attrs)
                 faststream_context.set_local("span", current_span)
                 return await call_next(msg)
@@ -77,13 +81,14 @@ class BaseOtelMiddleware(BaseMiddleware):
         msg: Any,
         **options: Any,
     ) -> Any:
-        headers = options.pop("headers") or {}
+        headers = options.get("headers") or {}
         requests_attrs = self._attributes_from_publish_options(options)
         span = trace.get_current_span()
         span.set_attributes(requests_attrs)
         propagate.inject(headers)
         message_size_histogram.record(len(options.get("body", "")))
-        return await call_next(msg, headers=headers, **options)
+        options["headers"] = headers
+        return await call_next(msg, **options)
 
 
 class RedisOtelMiddleware(BaseOtelMiddleware):
